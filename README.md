@@ -14,7 +14,9 @@ To run the script and save the files in a folder created by the script, type in 
 To run the script and save the files in a specific folder of your choosing, type in the following:
 
 	python3 downloader.py [url] -d [absoulute path to folder]
-	or
+
+or
+
 	python3 downloader.py [url] --destination [absoulute path to folder]
 
 For help, type in:

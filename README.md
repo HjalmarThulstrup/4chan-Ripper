@@ -1,4 +1,4 @@
-# 4chanRipper
+# 4chan Ripper
 I made this script so you nice and easily can download all media files from a specified 4chan thread.
 
 To run the script, you need to have Python 3.7 plus a few modules installed:

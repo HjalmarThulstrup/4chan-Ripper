@@ -7,9 +7,15 @@ To run the script, you need to have Python 3.7 plus a few modules installed:
 	argparse
 	urllib
   
-To run the script, type in the following command:
+To run the script and save the files in a folder created by the script, type in the following command:
 
 	python3 downloader.py [url]
+
+To run the script and save the files in a specific folder of your choosing, type in the following:
+
+	python3 downloader.py [url] -d [absoulute path to folder]
+	or
+	python3 downloader.py [url] --destination [absoulute path to folder]
 
 For help, type in:
 

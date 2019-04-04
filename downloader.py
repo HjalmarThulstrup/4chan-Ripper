@@ -4,6 +4,9 @@ import urllib.request as urllib
 import urllib.parse as urlparse
 import os.path
 import sys
+import re
+import datetime
+import time
 
 
 def get_html(url):
@@ -14,19 +17,14 @@ def get_html(url):
 
 
 def get_board_thread_name(url):
-    # nl = urlparse.urlparse(url).netloc.split(".")[1]
-    # path = urlparse.urlparse(url).path.split("/")[1] + "_" + urlparse.urlparse(url).path.split("/")[3]
     path = urlparse.urlparse(url).path.split("/")[1]
-    # return nl + "_" + path
     return '[' + path + ']'
 
 
 def get_op(html):
     soup = bs4.BeautifulSoup(html, 'html.parser')
     op = soup.find('blockquote', {'class': 'postMessage'}).text
-    op = op.replace(">", "")
-    op = op.replace("<", "")
-    op = op.replace("\n", " ")
+    op = re.sub(r"[^a-zA-Z0-9]+", ' ', op)
     op_words = op.split(" ")
     new_op = ''
     if len(op_words) < 5:
@@ -35,7 +33,10 @@ def get_op(html):
     else:
         for x in range(0, 5):
             new_op += op_words[x] + "_"
-    return new_op[:-1]
+    if new_op[:1] == "_":
+        return new_op[1:-1]
+    else:
+        return new_op[:-1]
 
 
 def get_download_links(html):
@@ -62,8 +63,12 @@ def make_dir(path):
         print("Successfully created the directory %s " % path)
 
 
+def get_time(seconds):
+    return datetime.timedelta(seconds=seconds)
+
+
 def download_files(links_and_filenames_dict, directory, url):
-    # path = get_board_thread_name(url) + '/'
+    start = time.time()
     path = get_board_thread_name(url) + get_op(get_html(url)) + '/'
     if directory == None:
         make_dir(path)
@@ -82,6 +87,11 @@ def download_files(links_and_filenames_dict, directory, url):
             print(url_value + " was saved as " + filename)
         except Exception as e:
             print(e)
+    end = time.time()
+    # total_time = "{:.{}f}".format(end-start, 2)
+    # print("\nIt took " + str(get_time(float(total_time)))[:-4] + " to download the files.")
+    total_time = end - start
+    print("\nIt took " + str(get_time(total_time))[:-4] + " to download the files.")
 
 
 if __name__ == '__main__':

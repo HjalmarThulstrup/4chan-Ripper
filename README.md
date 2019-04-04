@@ -1,6 +1,5 @@
 # 4chan Ripper
-I made this script so you nice and easily can download all media files from any 4chan thread on a worksafe board.
-
+I made this script so you nice and easily can download all media files from any thread on 4chan.org.
 
 To run the script, you need to have Python 3.7 plus the following modules installed:
 	

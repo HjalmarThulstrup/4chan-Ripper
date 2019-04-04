@@ -76,6 +76,7 @@ def calc_dir_size(dir_path):
             folder_size += os.path.getsize(filename)
     return size(folder_size)
 
+
 def download_files(links_and_filenames_dict, directory, url):
     start = time.time()
     path = get_board_thread_name(url) + get_op(get_html(url)) + '/'
@@ -83,7 +84,7 @@ def download_files(links_and_filenames_dict, directory, url):
         make_dir(path)
     else:
         path = directory + path
-        make_dir(path)   
+        make_dir(path)
     for filename_key, url_value in links_and_filenames_dict.items():
         try:
             with urllib.urlopen(url_value) as dlFile:
@@ -98,8 +99,10 @@ def download_files(links_and_filenames_dict, directory, url):
             print(e)
     end = time.time()
     total_time = end - start
-    print("\nIt took " + str(get_time(total_time))[:-4] + " to download the files.")
-    print("\nThe downloaded files took up " + calc_dir_size(path) + "mb of your harddisk space.")
+    print("\nIt took " + str(get_time(total_time))
+          [:-4] + " to download the files.")
+    print("\nThe downloaded files took up " +
+          calc_dir_size(path) + "mb of your harddisk space.")
 
 
 if __name__ == '__main__':

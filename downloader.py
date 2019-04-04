@@ -74,7 +74,6 @@ def calc_dir_size(dir_path):
         for file in files:
             filename = os.path.join(path, file)
             folder_size += os.path.getsize(filename)
-    #return sum(os.path.getsize(f) for f in os.listdir(dir_path) if os.path.isfile(f))
     return size(folder_size)
 
 def download_files(links_and_filenames_dict, directory, url):
@@ -98,8 +97,6 @@ def download_files(links_and_filenames_dict, directory, url):
         except Exception as e:
             print(e)
     end = time.time()
-    # total_time = "{:.{}f}".format(end-start, 2)
-    # print("\nIt took " + str(get_time(float(total_time)))[:-4] + " to download the files.")
     total_time = end - start
     print("\nIt took " + str(get_time(total_time))[:-4] + " to download the files.")
     print("\nThe downloaded files took up " + calc_dir_size(path) + "mb of your harddisk space.")

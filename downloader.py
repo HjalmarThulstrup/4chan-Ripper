@@ -58,9 +58,9 @@ def make_dir(path):
     try:
         os.mkdir(path)
     except OSError:
-        print("Creation of the directory %s failed" % path)
+        print("\nCreation of the directory %s failed\n" % path)
     else:
-        print("Successfully created the directory %s " % path)
+        print("\nSuccessfully created the directory %s \n" % path)
 
 
 def get_time(seconds):
@@ -74,7 +74,7 @@ def download_files(links_and_filenames_dict, directory, url):
         make_dir(path)
     else:
         path = directory + path
-        make_dir(path)
+        make_dir(path)   
     for filename_key, url_value in links_and_filenames_dict.items():
         try:
             with urllib.urlopen(url_value) as dlFile:

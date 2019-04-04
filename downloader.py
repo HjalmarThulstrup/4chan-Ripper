@@ -43,6 +43,8 @@ def get_download_links(html):
         file_url = e.select('a')[0]['href']
         file_url = "https:" + file_url
         filename = e.select('a')[0].text
+        if filename == "Spoiler Image":
+            filename = e["title"]
         url_filename_dict.update({filename:file_url})
     return url_filename_dict
 
@@ -60,20 +62,21 @@ def download_files(links_and_filenames_dict, directory, url):
         try:
             with urllib.urlopen(url_value) as dlFile:
                 content = dlFile.read()
+                filename = filename_key.replace('?', '')
                 if directory == None:
-                    complete_name = os.path.join(path + filename_key)
+                    complete_name = os.path.join(path + filename)
                 else:
-                    complete_name = os.path.join(directory + filename_key)
+                    complete_name = os.path.join(directory + filename)
                 file = open(complete_name, "wb")
                 file.write(content)
                 file.close
-            print(url_value + " was saved as " + filename_key)
+            print(url_value + " was saved as " + filename)
         except Exception as e: print(e)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='A script that downloads all media files from a 4chan thread')
     parser.add_argument('url', help='URL for the 4chan thread you want to download the files from')
-    parser.add_argument('-d', '--destination', help='The absolute path to the folder you want to save the files in. \n NOTE: If left blank, a new directory will be created in the active directory from where you are running the script.')
+    parser.add_argument('-d', '--destination', help='The absolute path to the folder you want to save the files in. NOTE: If left blank, a new directory will be created in the active directory from where you are running the script.')
     args = parser.parse_args()
     if args.url == "test":
         print("URL: " + str(args.url))

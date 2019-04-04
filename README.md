@@ -2,11 +2,17 @@
 I made this script so you nice and easily can download all media files from any 4chan thread on a worksafe board.
 
 
-To run the script, you need to have Python 3.7 plus a few modules installed:
+To run the script, you need to have Python 3.7 plus the following modules installed:
 	
-	beautifulsoup4
+	bs4
 	argparse
 	urllib
+	os
+	sys
+	re
+	datetime
+	time
+	hurry.filesize
   
 To run the script and save the files in a folder created by the script, type in the following command:
 

@@ -7,6 +7,7 @@ import sys
 import re
 import datetime
 import time
+from hurry.filesize import size
 
 
 def get_html(url):
@@ -67,6 +68,15 @@ def get_time(seconds):
     return datetime.timedelta(seconds=seconds)
 
 
+def calc_dir_size(dir_path):
+    folder_size = 0
+    for (path, dirs, files) in os.walk(dir_path):
+        for file in files:
+            filename = os.path.join(path, file)
+            folder_size += os.path.getsize(filename)
+    #return sum(os.path.getsize(f) for f in os.listdir(dir_path) if os.path.isfile(f))
+    return size(folder_size)
+
 def download_files(links_and_filenames_dict, directory, url):
     start = time.time()
     path = get_board_thread_name(url) + get_op(get_html(url)) + '/'
@@ -92,6 +102,7 @@ def download_files(links_and_filenames_dict, directory, url):
     # print("\nIt took " + str(get_time(float(total_time)))[:-4] + " to download the files.")
     total_time = end - start
     print("\nIt took " + str(get_time(total_time))[:-4] + " to download the files.")
+    print("\nThe downloaded files took up " + calc_dir_size(path) + "mb of your harddisk space.")
 
 
 if __name__ == '__main__':

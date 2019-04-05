@@ -12,18 +12,23 @@ To run the script, you need to have Python 3.7 plus the following modules instal
 	datetime
 	time
 	hurry.filesize
+	shutil
   
-To run the script and save the files in a folder created by the script, type in the following command:
+To save the files in a folder created by the script, type in the following command:
 
-	python3 downloader.py [url]
+	python downloader.py -u [url]
 
-To run the script and save the files in a folder created by the script, and save that folder in a specific folder of your choosing, type in the following:
+To save the files in a folder created by the script, and save that folder in a specific folder of your choosing, type in the following:
 
-	python3 downloader.py [url] -d [absoulute path to folder]
+	python downloader.py -u [url] -d [absoulute path to folder]
+	
+To save the files of multiple threads at once in a folder created by the script, type in:
 
-or
+	python downloader.py -l "[url1] [url2] [url3]"
+	
+To save the files of multiple threads at once (takes an unlimited amount of threads) in a folder created by the script, and save that folder in a specific folder of your choosing, type in:
 
-	python3 downloader.py [url] --destination [absoulute path to folder]
+	python downloader.py -l "[url1] [url2] [url3] ..." -d [absoulute path to folder]
 
 For help, type in:
 

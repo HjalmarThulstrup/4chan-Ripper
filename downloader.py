@@ -10,6 +10,9 @@ import time
 from hurry.filesize import size
 
 
+# TODO Implement multiple url functionality
+
+
 def get_html(url):
     hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -24,38 +27,57 @@ def get_html(url):
     return txtstr
 
 
-def get_board_thread_name(url):
+def get_board_name(url):
     path = urlparse.urlparse(url).path.split("/")[1]
     return '[' + path + ']'
 
 
 def get_op(html):
+    folder_name = ''
     soup = bs4.BeautifulSoup(html, 'html.parser')
+    subjects = soup.find_all('span', {'class': 'subject'})
+    subject = subjects[1].text
     op = soup.find('blockquote', {'class': 'postMessage'}).text
-    op = re.sub(r"[^a-zA-Z0-9]+", ' ', op)
-    op_words = op.split(" ")
-    new_op = ''
-    if len(op_words) < 5:
-        for word in op_words:
-            new_op += word + "_"
+    if subject != "":
+        subject = subject.replace("'", "")
+        subject = re.sub(r"[^a-zA-Z0-9]+", ' ', subject)
+        subject_words = subject.split(" ")
+        print(subject_words)
+        folder_name += make_str(subject_words)
+    else:
+        op = op.replace("'", "")
+        op = re.sub(r"[^a-zA-Z0-9]+", ' ', op)
+        op_words = op.split(" ")
+        folder_name += make_str(op_words)
+    if folder_name[:1] == "_":
+        return folder_name[1:-1]
+    else:
+        return folder_name[:-1]
+
+
+def make_str(words):
+    string = ''
+    if len(words) < 5:
+        for word in words:
+            string += word + "_"
     else:
         for x in range(0, 5):
-            new_op += op_words[x] + "_"
-    if new_op[:1] == "_":
-        return new_op[1:-1]
-    else:
-        return new_op[:-1]
+            string += words[x] + "_"
+    return string
 
 
 def get_download_links(html):
     soup = bs4.BeautifulSoup(html, 'html.parser')
     event_cells = soup.find_all('div', {'class': 'fileText'})
-
     url_filename_dict = {}
     for e in event_cells:
         file_url = e.select('a')[0]['href']
         file_url = "https:" + file_url
-        filename = e.select('a')[0].text
+        filename = e.select('a')[0]
+        if filename.has_attr('title'):
+            filename = filename['title']
+        else:
+            filename = filename.text
         if filename == "Spoiler Image":
             filename = e["title"]
         url_filename_dict.update({filename: file_url})
@@ -86,7 +108,7 @@ def calc_dir_size(dir_path):
 
 def download_files(links_and_filenames_dict, directory, url):
     start = time.time()
-    path = get_board_thread_name(url) + get_op(get_html(url)) + '/'
+    path = get_board_name(url) + get_op(get_html(url)) + '/'
     if directory == None:
         make_dir(path)
     else:

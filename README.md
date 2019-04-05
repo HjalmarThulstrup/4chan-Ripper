@@ -24,7 +24,7 @@ To save the files in a folder created by the script, and save that folder in a s
 	
 To save the files of multiple threads at once in a folder created by the script, type in:
 
-	python downloader.py -l "[url1] [url2] [url3]"
+	python downloader.py -l "[url1] [url2] [url3] ..."
 	
 To save the files of multiple threads at once (takes an unlimited amount of threads) in a folder created by the script, and save that folder in a specific folder of your choosing, type in:
 

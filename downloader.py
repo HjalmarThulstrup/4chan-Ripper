@@ -168,8 +168,9 @@ if __name__ == '__main__':
         print("URL List:" + str(args.list))
         sys.exit()
     dest = args.destination
-    if dest[-1:] != "/" or dest[-1:] != "\\":
-        dest = dest + "/"
+    if dest != None:
+        if dest[-1:] != "/" or dest[-1:] != "\\":
+            dest = dest + "/"
     if args.list != None:
         url_list = [str(item) for item in args.list.split(' ')]
         for url in url_list:

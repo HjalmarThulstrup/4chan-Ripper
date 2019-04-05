@@ -8,6 +8,7 @@ import re
 import datetime
 import time
 from hurry.filesize import size
+import shutil
 
 
 def get_html(url):
@@ -80,6 +81,19 @@ def get_download_links(html):
     return url_filename_dict
 
 
+def check_dir(path):
+    if not os.path.isdir(path):
+        make_dir(path)
+    else:
+        print("The directory already exsists. Would you like to remove it before downloading? y/n")
+        answer = input()
+        if answer == "y":
+            remove_dir(path)
+            make_dir(path)
+        else:
+            sys.exit()
+
+
 def make_dir(path):
     try:
         os.mkdir(path)
@@ -87,6 +101,15 @@ def make_dir(path):
         print("\nCreation of the directory %s failed\n" % path)
     else:
         print("\nSuccessfully created the directory %s \n" % path)
+
+
+def remove_dir(path):
+    try:
+        shutil.rmtree(path)
+    except OSError:
+        print("\nRemoval of the directory %s failed\n" % path)
+    else:
+        print("\nSuccessfully removed the directory %s \n" % path)
 
 
 def get_time(seconds):
@@ -106,10 +129,10 @@ def download_files(links_and_filenames_dict, directory, url):
     start = time.time()
     path = get_board_name(url) + get_op(get_html(url)) + '/'
     if directory == None:
-        make_dir(path)
+        check_dir(path)
     else:
         path = directory + path
-        make_dir(path)
+        check_dir(path)
     for filename_key, url_value in links_and_filenames_dict.items():
         try:
             with urllib.urlopen(url_value) as dlFile:

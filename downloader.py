@@ -10,9 +10,6 @@ import time
 from hurry.filesize import size
 
 
-# TODO Implement multiple url functionality
-
-
 def get_html(url):
     hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -42,7 +39,6 @@ def get_op(html):
         subject = subject.replace("'", "")
         subject = re.sub(r"[^a-zA-Z0-9]+", ' ', subject)
         subject_words = subject.split(" ")
-        print(subject_words)
         folder_name += make_str(subject_words)
     else:
         op = op.replace("'", "")
@@ -138,15 +134,22 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='A script that downloads all media files from a 4chan thread')
     parser.add_argument(
-        'url', help='URL for the 4chan thread you want to download the files from')
+        '-u', '--url', help='URL for the 4chan thread you want to download the files from')
     parser.add_argument('-d', '--destination', help='The absolute path to the directory you want the new folder with the downloaded files to be stored in. NOTE: If left blank, a new directory will be created in the active directory from where you are running the script.')
+    parser.add_argument(
+        '-l', '--list', help="List of thread URL's you want to download the files from", type=str)
     args = parser.parse_args()
     if args.url == "test":
         print("URL: " + str(args.url))
         print("Destination: " + str(args.destination))
+        print("URL List:" + str(args.list))
         sys.exit()
     dest = args.destination
     if dest[-1:] != "/" or dest[-1:] != "\\":
         dest = dest + "/"
-    download_files(get_download_links(get_html(args.url)),
-                   dest, args.url)
+    if args.list != None:
+        url_list = [str(item) for item in args.list.split(' ')]
+        for url in url_list:
+            download_files(get_download_links(get_html(url)), dest, url)
+    else:
+        download_files(get_download_links(get_html(args.url)), dest, args.url)

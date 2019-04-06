@@ -1,14 +1,8 @@
-import bs4
-import argparse
+import bs4, argparse, sys, re, datetime, time, shutil, os.path
 import urllib.request as urllib
 import urllib.parse as urlparse
-import os.path
-import sys
-import re
-import datetime
-import time
 from hurry.filesize import size
-import shutil
+
 
 
 def get_html(url):

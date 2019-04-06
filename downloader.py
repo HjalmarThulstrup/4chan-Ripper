@@ -38,12 +38,12 @@ def get_op(html):
     op = soup.find('blockquote', {'class': 'postMessage'}).text
     if subject != "":
         subject = subject.replace("'", "")
-        subject = re.sub(r"[^a-zA-Z0-9]+", ' ', subject)
+        subject = re.sub(r"[^a-zA-Z0-9-]+", ' ', subject)
         subject_words = subject.split(" ")
         folder_name += make_str(subject_words)
     else:
         op = op.replace("'", "")
-        op = re.sub(r"[^a-zA-Z0-9]+", ' ', op)
+        op = re.sub(r"[^a-zA-Z0-9-]+", ' ', op)
         op_words = op.split(" ")
         folder_name += make_str(op_words)
     if folder_name[:1] == "_":
@@ -113,19 +113,24 @@ def remove_dir(path):
 
 
 def get_time(seconds):
-    return datetime.timedelta(seconds=seconds)
+    print("\nIt took " + str(datetime.timedelta(seconds=seconds))
+            [:-4] + " to download the files.")
+    #return datetime.timedelta(seconds=seconds)
 
 
-def calc_dir_size(dir_path):
+def calc_dir_size(dir_path, list_bool):
     folder_size = 0
     for (path, dirs, files) in os.walk(dir_path):
         for file in files:
             filename = os.path.join(path, file)
             folder_size += os.path.getsize(filename)
-    return size(folder_size)
+    if list_bool:
+        return folder_size
+    else:
+        return size(folder_size)
 
 
-def download_files(links_and_filenames_dict, directory, url):
+def download_files(links_and_filenames_dict, directory, url, list_bool, time_bool):
     start = time.time()
     path = get_board_name(url) + get_op(get_html(url)) + '/'
     if directory == None:
@@ -147,13 +152,17 @@ def download_files(links_and_filenames_dict, directory, url):
             print(e)
     end = time.time()
     total_time = end - start
-    print("\nIt took " + str(get_time(total_time))
-          [:-4] + " to download the files.")
-    print("\nThe downloaded files took up " +
-          calc_dir_size(path) + "mb of your harddisk space.")
+    if time_bool:
+        get_time(total_time)
+    if not list_bool:
+        print("\nThe downloaded files took up " +
+        calc_dir_size(path, list_bool) + " of your harddisk space.")
+    else:
+        return calc_dir_size(path, list_bool)
 
 
 if __name__ == '__main__':
+    disk_space = 0
     parser = argparse.ArgumentParser(
         description='A script that downloads all media files from a 4chan thread')
     parser.add_argument(
@@ -172,8 +181,15 @@ if __name__ == '__main__':
         if dest[-1:] != "/" or dest[-1:] != "\\":
             dest = dest + "/"
     if args.list != None:
+        start = time.time()
         url_list = [str(item) for item in args.list.split(' ')]
         for url in url_list:
-            download_files(get_download_links(get_html(url)), dest, url)
+            disk_space += download_files(get_download_links(get_html(url)), dest, url, True, False)
+        end = time.time()
+        total_time = end - start
+        get_time(total_time)
     else:
-        download_files(get_download_links(get_html(args.url)), dest, args.url)
+        download_files(get_download_links(get_html(args.url)), dest, args.url, False, True)
+    if disk_space > 0:
+        print("\nThe downloaded files took up " +
+        size(disk_space) + " of your harddisk space.")

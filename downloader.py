@@ -89,9 +89,10 @@ def get_download_links(html):
     return url_filename_dict
 
 
-def check_dir(path, overwrite_bool):
+def check_dir(path, overwrite_bool, length, index):
     if not os.path.isdir(path):
         make_dir(path)
+        printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 50)
     else:
         if not overwrite_bool:
             print(
@@ -99,30 +100,34 @@ def check_dir(path, overwrite_bool):
             answer = input()
             if answer == "y":
                 remove_dir(path)
+                printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 50)
                 make_dir(path)
+                printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 50)
             else:
                 sys.exit()
         else:
             remove_dir(path)
+            printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 50)
             make_dir(path)
+            printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 50)
 
 
 def make_dir(path):
     try:
         os.mkdir(path)
     except OSError:
-        print("\nCreation of the directory %s failed\n" % path)
+        print("Creation of the directory %s failed" % path)
     else:
-        print("\nSuccessfully created the directory %s \n" % path)
+        print("Successfully created the directory %s " % path)
 
 
 def remove_dir(path):
     try:
         shutil.rmtree(path)
     except OSError:
-        print("\nRemoval of the directory %s failed\n" % path)
+        print("Removal of the directory %s failed" % path)
     else:
-        print("\nSuccessfully removed the directory %s \n" % path)
+        print("Successfully removed the directory %s " % path)
 
 
 def get_time(seconds):
@@ -142,14 +147,37 @@ def calc_dir_size(dir_path, list_bool):
         return size(folder_size)
 
 
-def download_files(links_and_filenames_dict, directory, url, list_bool, time_bool, overwrite_bool):
+
+def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+    """
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filledLength = int(length * iteration // total)
+    bar = fill * filledLength + '-' * (length - filledLength)
+    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = '\r')
+    # Print New Line on Complete
+    if iteration == total: 
+        print()
+
+
+def download_files(links_and_filenames_dict, directory, url, list_bool, time_bool, overwrite_bool, length, index=1):
     start = time.time()
     path = get_board_name(url) + get_op(get_html(url)) + '/'
+    i = index
     if directory == None:
-        check_dir(path, overwrite_bool)
+        check_dir(path, overwrite_bool, length, index)
     else:
         path = directory + path
-        check_dir(path, overwrite_bool)
+        check_dir(path, overwrite_bool, length, index)
     for filename_key, url_value in links_and_filenames_dict.items():
         try:
             with urllib.urlopen(url_value) as dlFile:
@@ -160,6 +188,8 @@ def download_files(links_and_filenames_dict, directory, url, list_bool, time_boo
                 file.write(content)
                 file.close
             print(url_value + " was saved as " + filename)
+            printProgressBar(i, length, prefix = 'Progress:', suffix = 'Complete', length = 50)
+            i += 1
         except Exception as e:
             print(e)
     end = time.time()
@@ -170,7 +200,8 @@ def download_files(links_and_filenames_dict, directory, url, list_bool, time_boo
         print("\nThe downloaded files took up " +
               calc_dir_size(path, list_bool) + " of your harddisk space.")
     else:
-        return calc_dir_size(path, list_bool)
+        return_list = [calc_dir_size(path, list_bool), i]
+        return return_list
 
 
 if __name__ == '__main__':
@@ -181,13 +212,14 @@ if __name__ == '__main__':
         '-u', '--url', help='URL for the 4chan thread you want to download the files from')
     parser.add_argument('-d', '--destination', help='The absolute path to the directory you want the new folder with the downloaded files to be stored in. NOTE: If left blank, a new directory will be created in the active directory from where you are running the script.')
     parser.add_argument(
-        '-l', '--list', help="List of thread URL's you want to download the files from", type=str)
+        '-l', '--list', help="List of thread URLs you want to download the files from. List needs to be surrounded by quotation marks and URLs seperated by spaces.", type=str)
     parser.add_argument(
         '-o', '--overwrite', help='Automatically overwrites any folders with the same name as the folders being created by the script', action='store_true')
     args = parser.parse_args()
     if args.url == None:
-        parser.print_help()
-        sys.exit()
+        if args.list == None:
+            parser.print_help()
+            sys.exit()
     if args.url == "test":
         print("URL: " + str(args.url))
         print("Destination: " + str(args.destination))
@@ -200,15 +232,21 @@ if __name__ == '__main__':
     if args.list != None:
         start = time.time()
         url_list = [str(item) for item in args.list.split(' ')]
+        length = 0
         for url in url_list:
-            disk_space += download_files(get_download_links(get_html(url)),
-                                         dest, url, True, False, args.overwrite)
+            length += len(get_download_links(get_html(url)))
+        index = 1
+        for url in url_list:
+            return_list = download_files(get_download_links(get_html(url)),
+                                         dest, url, True, False, args.overwrite, length, index)
+            disk_space += return_list[0]
+            index = return_list[1]
         end = time.time()
         total_time = end - start
         get_time(total_time)
     else:
         download_files(get_download_links(get_html(args.url)),
-                       dest, args.url, False, True, args.overwrite)
+                       dest, args.url, False, True, args.overwrite, len(get_download_links(get_html(args.url))))
     if disk_space > 0:
         print("\nThe downloaded files took up " +
               size(disk_space) + " of your harddisk space.")

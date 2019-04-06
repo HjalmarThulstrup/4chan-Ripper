@@ -12,17 +12,21 @@ import shutil
 
 
 def get_html(url):
-    hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
-           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-           'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
-           'Accept-Encoding': 'none',
-           'Accept-Language': 'en-US,en;q=0.8',
-           'Connection': 'keep-alive'}
-    req = urllib.Request(url, headers=hdr)
-    res = urllib.urlopen(req)
-    txt = res.read()
-    txtstr = txt.decode("utf-8")
-    return txtstr
+    try:
+        hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
+               'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+               'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
+               'Accept-Encoding': 'none',
+               'Accept-Language': 'en-US,en;q=0.8',
+               'Connection': 'keep-alive'}
+        req = urllib.Request(url, headers=hdr)
+        res = urllib.urlopen(req)
+        txt = res.read()
+        txtstr = txt.decode("utf-8")
+        return txtstr
+    except:
+        parser.print_help()
+        sys.exit()
 
 
 def get_board_name(url):
@@ -38,28 +42,32 @@ def get_op(html):
     op = soup.find('blockquote', {'class': 'postMessage'}).text
     if subject != "":
         subject = subject.replace("'", "")
-        subject = re.sub(r"[^a-zA-Z0-9-]+", ' ', subject)
+        subject = re.sub(r"[^a-zA-Z0-9-!]+", ' ', subject)
         subject_words = subject.split(" ")
-        folder_name += make_str(subject_words)
+        folder_name += make_str(subject_words, True)
     else:
         op = op.replace("'", "")
-        op = re.sub(r"[^a-zA-Z0-9-]+", ' ', op)
+        op = re.sub(r"[^a-zA-Z0-9-!]+", ' ', op)
         op_words = op.split(" ")
-        folder_name += make_str(op_words)
+        folder_name += make_str(op_words, False)
     if folder_name[:1] == "_":
         return folder_name[1:-1]
     else:
         return folder_name[:-1]
 
 
-def make_str(words):
+def make_str(words, subject_bool):
     string = ''
-    if len(words) < 5:
+    if not subject_bool:
+        if len(words) < 7:
+            for word in words:
+                string += word + "_"
+        else:
+            for x in range(0, 7):
+                string += words[x] + "_"
+    else:
         for word in words:
             string += word + "_"
-    else:
-        for x in range(0, 5):
-            string += words[x] + "_"
     return string
 
 
@@ -81,17 +89,22 @@ def get_download_links(html):
     return url_filename_dict
 
 
-def check_dir(path):
+def check_dir(path, overwrite_bool):
     if not os.path.isdir(path):
         make_dir(path)
     else:
-        print("The directory already exsists. Would you like to remove it before downloading? y/n")
-        answer = input()
-        if answer == "y":
+        if not overwrite_bool:
+            print(
+                "The directory already exsists. Would you like to remove it before downloading? y/n")
+            answer = input()
+            if answer == "y":
+                remove_dir(path)
+                make_dir(path)
+            else:
+                sys.exit()
+        else:
             remove_dir(path)
             make_dir(path)
-        else:
-            sys.exit()
 
 
 def make_dir(path):
@@ -114,8 +127,7 @@ def remove_dir(path):
 
 def get_time(seconds):
     print("\nIt took " + str(datetime.timedelta(seconds=seconds))
-            [:-4] + " to download the files.")
-    #return datetime.timedelta(seconds=seconds)
+          [:-4] + " to download the files.")
 
 
 def calc_dir_size(dir_path, list_bool):
@@ -130,14 +142,14 @@ def calc_dir_size(dir_path, list_bool):
         return size(folder_size)
 
 
-def download_files(links_and_filenames_dict, directory, url, list_bool, time_bool):
+def download_files(links_and_filenames_dict, directory, url, list_bool, time_bool, overwrite_bool):
     start = time.time()
     path = get_board_name(url) + get_op(get_html(url)) + '/'
     if directory == None:
-        check_dir(path)
+        check_dir(path, overwrite_bool)
     else:
         path = directory + path
-        check_dir(path)
+        check_dir(path, overwrite_bool)
     for filename_key, url_value in links_and_filenames_dict.items():
         try:
             with urllib.urlopen(url_value) as dlFile:
@@ -156,7 +168,7 @@ def download_files(links_and_filenames_dict, directory, url, list_bool, time_boo
         get_time(total_time)
     if not list_bool:
         print("\nThe downloaded files took up " +
-        calc_dir_size(path, list_bool) + " of your harddisk space.")
+              calc_dir_size(path, list_bool) + " of your harddisk space.")
     else:
         return calc_dir_size(path, list_bool)
 
@@ -170,7 +182,12 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--destination', help='The absolute path to the directory you want the new folder with the downloaded files to be stored in. NOTE: If left blank, a new directory will be created in the active directory from where you are running the script.')
     parser.add_argument(
         '-l', '--list', help="List of thread URL's you want to download the files from", type=str)
+    parser.add_argument(
+        '-o', '--overwrite', help='Automatically overwrites any folders with the same name as the folders being created by the script', action='store_true')
     args = parser.parse_args()
+    if args.url == None:
+        parser.print_help()
+        sys.exit()
     if args.url == "test":
         print("URL: " + str(args.url))
         print("Destination: " + str(args.destination))
@@ -184,12 +201,14 @@ if __name__ == '__main__':
         start = time.time()
         url_list = [str(item) for item in args.list.split(' ')]
         for url in url_list:
-            disk_space += download_files(get_download_links(get_html(url)), dest, url, True, False)
+            disk_space += download_files(get_download_links(get_html(url)),
+                                         dest, url, True, False, args.overwrite)
         end = time.time()
         total_time = end - start
         get_time(total_time)
     else:
-        download_files(get_download_links(get_html(args.url)), dest, args.url, False, True)
+        download_files(get_download_links(get_html(args.url)),
+                       dest, args.url, False, True, args.overwrite)
     if disk_space > 0:
         print("\nThe downloaded files took up " +
-        size(disk_space) + " of your harddisk space.")
+              size(disk_space) + " of your harddisk space.")

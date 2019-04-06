@@ -92,7 +92,7 @@ def get_download_links(html):
 def check_dir(path, overwrite_bool, length, index):
     if not os.path.isdir(path):
         make_dir(path)
-        printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 50)
+        printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 25)
     else:
         if not overwrite_bool:
             print(
@@ -100,16 +100,16 @@ def check_dir(path, overwrite_bool, length, index):
             answer = input()
             if answer == "y":
                 remove_dir(path)
-                printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 50)
+                printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 25)
                 make_dir(path)
-                printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 50)
+                printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 25)
             else:
                 sys.exit()
         else:
             remove_dir(path)
-            printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 50)
+            printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 25)
             make_dir(path)
-            printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 50)
+            printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 25)
 
 
 def make_dir(path):
@@ -188,7 +188,7 @@ def download_files(links_and_filenames_dict, directory, url, list_bool, time_boo
                 file.write(content)
                 file.close
             print(url_value + " was saved as " + filename)
-            printProgressBar(i, length, prefix = 'Progress:', suffix = 'Complete', length = 50)
+            printProgressBar(i, length, prefix = 'Progress:', suffix = 'Complete', length = 25)
             i += 1
         except Exception as e:
             print(e)

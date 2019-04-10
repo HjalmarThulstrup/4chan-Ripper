@@ -2,6 +2,7 @@ import bs4, argparse, sys, re, datetime, time, shutil, os.path
 import urllib.request as urllib
 import urllib.parse as urlparse
 from hurry.filesize import size
+import dir_time_bar as dtb
 
 
 
@@ -83,98 +84,16 @@ def get_download_links(html):
     return url_filename_dict
 
 
-def check_dir(path, overwrite_bool, length, index):
-    if not os.path.isdir(path):
-        make_dir(path)
-        printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 25)
-    else:
-        if not overwrite_bool:
-            print(
-                "The directory already exsists. Would you like to remove it before downloading? y/n")
-            answer = input()
-            if answer == "y":
-                remove_dir(path)
-                printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 25)
-                make_dir(path)
-                printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 25)
-            else:
-                sys.exit()
-        else:
-            remove_dir(path)
-            printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 25)
-            make_dir(path)
-            printProgressBar(index, length, prefix = 'Progress:', suffix = 'Complete', length = 25)
-
-
-def make_dir(path):
-    try:
-        os.mkdir(path)
-    except OSError:
-        print("Creation of the directory %s failed" % path)
-    else:
-        print("Successfully created the directory %s " % path)
-
-
-def remove_dir(path):
-    try:
-        shutil.rmtree(path)
-    except OSError:
-        print("Removal of the directory %s failed" % path)
-    else:
-        print("Successfully removed the directory %s " % path)
-
-
-def get_time(seconds):
-    print("\nIt took " + str(datetime.timedelta(seconds=seconds))
-          [:-4] + " to download the files.")
-
-
-def calc_dir_size(dir_path, list_bool):
-    folder_size = 0
-    amount_files = 0
-    for (path, dirs, files) in os.walk(dir_path):
-        for file in files:
-            amount_files += 1
-            filename = os.path.join(path, file)
-            folder_size += os.path.getsize(filename)
-    if list_bool:
-        return_list = [folder_size, amount_files]
-        return return_list
-    else:
-        return_list = [size(folder_size), str(amount_files)]
-        return return_list
-
-
-
-def printProgressBar(iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
-    """
-    Call in a loop to create terminal progress bar
-    @params:
-        iteration   - Required  : current iteration (Int)
-        total       - Required  : total iterations (Int)
-        prefix      - Optional  : prefix string (Str)
-        suffix      - Optional  : suffix string (Str)
-        decimals    - Optional  : positive number of decimals in percent complete (Int)
-        length      - Optional  : character length of bar (Int)
-        fill        - Optional  : bar fill character (Str)
-    """
-    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
-    filledLength = int(length * iteration // total)
-    bar = fill * filledLength + '-' * (length - filledLength)
-    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end = '\r')
-    if iteration == total: 
-        print()
-
 
 def download_files(links_and_filenames_dict, directory, url, list_bool, time_bool, overwrite_bool, length, index=1):
     start = time.time()
     path = get_board_name(url) + get_op(get_html(url)) + '/'
     i = index
     if directory == None:
-        check_dir(path, overwrite_bool, length, index)
+        dtb.check_dir(path, overwrite_bool, length, index)
     else:
         path = directory + path
-        check_dir(path, overwrite_bool, length, index)
+        dtb.check_dir(path, overwrite_bool, length, index)
     for filename_key, url_value in links_and_filenames_dict.items():
         try:
             with urllib.urlopen(url_value) as dlFile:
@@ -185,20 +104,20 @@ def download_files(links_and_filenames_dict, directory, url, list_bool, time_boo
                 file.write(content)
                 file.close
             print(url_value + " was saved as " + filename)
-            printProgressBar(i, length, prefix = 'Progress:', suffix = 'Complete', length = 25)
+            dtb.printProgressBar(i, length, prefix = 'Progress:', suffix = 'Complete', length = 25)
             i += 1
         except Exception as e:
             print(e)
     end = time.time()
     total_time = end - start
     if time_bool:
-        get_time(total_time)
+        dtb.get_time(total_time)
     if not list_bool:
-        dir_files_list = calc_dir_size(path, list_bool)
+        dir_files_list = dtb.calc_dir_size(path, list_bool)
         print("\nYou downloaded " +
               dir_files_list[1] + " files with a combined filesize of " + dir_files_list[0])
     else:
-        return_list = [calc_dir_size(path, list_bool), i]
+        return_list = [dtb.calc_dir_size(path, list_bool), i]
         return return_list
 
 
@@ -243,7 +162,7 @@ if __name__ == '__main__':
             index = return_list[1]
         end = time.time()
         total_time = end - start
-        get_time(total_time)
+        dtb.get_time(total_time)
     else:
         download_files(get_download_links(get_html(args.url)),
                        dest, args.url, False, True, args.overwrite, len(get_download_links(get_html(args.url))))

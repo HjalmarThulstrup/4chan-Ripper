@@ -1,9 +1,8 @@
-import bs4, argparse, sys, re, datetime, time, shutil, os.path
+import bs4, argparse, sys, re, datetime, time, shutil, os.path, random
 import urllib.request as urllib
 import urllib.parse as urlparse
 from hurry.filesize import size
 import dir_time_bar as dtb
-
 
 
 def get_html(url):
@@ -65,6 +64,17 @@ def make_str(words, subject_bool):
             string += word + "_"
     return string
 
+def check_fn(filename, fn_dict):
+    new_fn = filename.lower()
+    if new_fn in fn_dict:
+        fn_l = filename.rsplit('.', 1)
+        new_fn = fn_l[0] + str(random.randint(1, len(fn_dict))) + '.' + fn_l[1]
+        if new_fn in fn_dict:
+            check_fn(new_fn, fn_dict)
+        else:
+            return new_fn
+    else:
+        return new_fn
 
 def get_download_links(html):
     soup = bs4.BeautifulSoup(html, 'html.parser')
@@ -80,6 +90,7 @@ def get_download_links(html):
             filename = filename.text
         if filename == "Spoiler Image":
             filename = e["title"]
+        filename = check_fn(filename, url_filename_dict)
         url_filename_dict.update({filename: file_url})
     return url_filename_dict
 
